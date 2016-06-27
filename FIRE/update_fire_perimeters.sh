@@ -24,18 +24,12 @@ source "$WORKON_HOME/geonode/bin/activate"
 # Set the import date and current year. This will automatically collect the current date's
 # fire perimeters and update the request from the ArcGIS server based on the current year.
 import_date="`date +'%Y-%m-%d %H:%M:%S'`"
-current_year="`date +'%Y'`"
 
-# Request the active fire perimeters from the Alaska Fire Service's ArcGIS server
-# for the current year.
-`which ogr2ogr` active_fire_perimeters.shp http://afs.ak.blm.gov/arcgis/rest/services/MapAndFeatureServices/FirePerimeters/MapServer/1/query\?where\=FIREYEAR+%3D%27$current_year%27\&outFields\=\*\&f\=pjson
-
-# Reproject to 3338
-`which ogr2ogr` active_fire_perimeters_3338.shp -t_srs "EPSG:3338" active_fire_perimeters.shp
+`which python` $INSTALL_DIR/mapventure-tools/FIRE/get_fire_data.py -p $INSTALL_DIR/mapventure-tools/FIRE/fire-updates/
 
 # Import the current layer with the current updated date. Has a high verbosity of reporting to let
 # us be aware of any issues taking place.
-`which python` $INSTALL_DIR/geonode/manage.py importlayers -v 3 -d "$import_date" -t "Active Fires" -o active_fire_perimeters_3338.shp
+`which python` $INSTALL_DIR/geonode/manage.py importlayers -v 3 -d "$import_date" -t "Active Fires" -o $INSTALL_DIR/mapventure-tools/FIRE/fire-updates/fireperimeters_2016_all_cleaned_joined.shp
 
 # Remove the current date's active fire perimeter files.
-rm -f active_fire_perimeters*
+rm -f $INSTALL_DIR/mapventure-tools/FIRE/fire-updates/fire*
