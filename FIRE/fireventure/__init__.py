@@ -16,53 +16,144 @@ def run(output_directory):
     fmat='GeoJSON'
     ext='.json'
 
+    all_fires_fields = [
+        'OBJECTID',
+        'ID',
+        'NAME',
+        'FIRESEASON',
+        'LASTUPDATETIME',
+        'MGMTORGID',
+        'MGMTOFFICEID',
+        'MGMTOPTIONID',
+        'PRESCRIBEDFIRE',
+        'LATITUDE',
+        'LONGITUDE',
+        'MAPNAME',
+        'MAPNUMBER',
+        'NEARESTWEATHERSTA',
+        'ORIGINOWNERID',
+        'ORIGINADMINUNITID',
+        'DISCOVERYDATETIME',
+        'DISCOVERYSIZE',
+        'IADATETIME',
+        'IASIZE',
+        'INITIALBEHAVIOR',
+        'CONTROLDATETIME',
+        'OUTDATE',
+        'ESTIMATEDTOTALACRES',
+        'ACTUALTOTALACRES',
+        'ESTIMATEDTOTALCOST',
+        'GENERALCAUSE',
+        'SPECIFICCAUSE',
+        'ORIGINSLOPE',
+        'ORIGINASPECT',
+        'ORIGINELEVATION',
+        'ORIGINTOWNSHIP',
+        'ORIGINRANGE',
+        'ORIGINSECTION',
+        'ORIGINQUARTER',
+        'ORIGINMERIDIAN',
+        'STRUCTURESTHREATENED',
+        'STRUCTURESBURNED',
+        'PRIMARYFUELTYPE',
+        'HARDCOPYREPORTAVAILABLE',
+        'TYPE1ASSIGNEDDATE',
+        'TYPE1RELEASEDDATE',
+        'TYPE2ASSIGNEDDATE',
+        'TYPE2RELEASEDDATE',
+        'AFSNUMBER',
+        'DOFNUMBER',
+        'USFSNUMBER',
+        'ADDITIONALNUMBER',
+        'FALSEALARM',
+        'FORCESITRPT',
+        'FORCESITRPTSTATUS',
+        'RECORDNUMBER',
+        'COMPLEX',
+        'IMPORT_NOTES',
+        'WFUFIRE',
+        'REPORTRECEIVEDDATE',
+        'ISCOMPLEX',
+        'CARRYOVER',
+        'STATEADSID',
+        'ORIGINAL_LATITUDE',
+        'ORIGINAL_LONGITUDE',
+        'IRWINID',
+        'ISVALID',
+        'SUPPRESSIONSTRATEGY',
+        'FIREMGMTCOMPLEXITY',
+        'ADSPERMISSIONSTATE',
+        'OWNERKIND',
+        'FIRECODEREQUESTED',
+        'ISREIMBURSABLE',
+        'ISFSASSISTED',
+        'ISTRESPASS',
+        'FIRECODENOTES',
+        'CONTAINMENTDATETIME',
+        'CONFLICTIRWINID',
+        'COMPLEXPARENTIRWINID',
+        'BURNEDOVER',
+        'BURNEDOVERBY',
+        'MERGEDINTO',
+        'MERGEDDATE'
+    ]
+
     for service in services:
         for group in groups:
             baseurl = '/'.join([ 'http://afs.ak.blm.gov/arcgis/rest/services/MapAndFeatureServices',service,'MapServer' ])
             whereclause = services[ service ] #"FIREYEAR='2016'"
 
+            # Currently (7/18) there is a bug with the API,
+            # which is advertising different fields from
+            # what it actually can query, so we need to
+            # explicitly list the fields we want.
+            if service is 'Fires':
+                layerlist = all_fires_fields
+            else:
+                layerlist = None
+
             # REST key:vals available for use when interacting with the service
             #   * info on the rest service from ESRI: http://resources.arcgis.com/en/help/rest/apiref/mapserver.html
             #   * QUERY params docs: http://resources.arcgis.com/en/help/rest/apiref/query.html
-            QUERY = {
-                'where' : whereclause,
-                'text' : '',
-                'objectIds' : '',
-                'time' : '',
-                'geometry' : '',
-                'geometryType' : 'esriGeometryEnvelope',
-                'inSR' : '',
-                'spatialRel' : 'esriSpatialRelIntersects',
-                'relationParam' : '',
-                'outFields' : '*',
-                'returnGeometry' : 'true',
-                'maxAllowableOffset' : '',
-                'geometryPrecision' : '',
-                'outSR' : '',
-                'returnIdsOnly' : 'false',
-                'returnCountOnly' : 'false',
-                'orderByFields' : '',
-                'groupByFieldsForStatistics' : '',
-                'outStatistics' : '',
-                'returnZ' : 'false',
-                'returnM' : 'false',
-                'gdbVersion' : '',
-                'returnDistinctValues' : 'false',
-                'returnTrueCurves' : 'false',
-                'resultOffset' : '',
-                'resultRecordCount' : '',
-                'f' : 'pjson'
-            }
+            # QUERY = {
+            #     'where' : whereclause,
+            #     'text' : '',
+            #     'objectIds' : '',
+            #     'time' : '',
+            #     'geometry' : '',
+            #     'geometryType' : 'esriGeometryEnvelope',
+            #     'inSR' : '',
+            #     'spatialRel' : 'esriSpatialRelIntersects',
+            #     'relationParam' : '',
+            #     'outFields' : '*',
+            #     'returnGeometry' : 'true',
+            #     'maxAllowableOffset' : '',
+            #     'geometryPrecision' : '',
+            #     'outSR' : '',
+            #     'returnIdsOnly' : 'false',
+            #     'returnCountOnly' : 'false',
+            #     'orderByFields' : '',
+            #     'groupByFieldsForStatistics' : '',
+            #     'outStatistics' : '',
+            #     'returnZ' : 'false',
+            #     'returnM' : 'false',
+            #     'gdbVersion' : '',
+            #     'returnDistinctValues' : 'false',
+            #     'returnTrueCurves' : 'false',
+            #     'resultOffset' : '',
+            #     'resultRecordCount' : '',
+            #     'f' : 'pjson'
+            # }
 
-            f = FireData( baseurl )
+            #f = FireData( baseurl )
 
             # after inspecting layers available choose a layerid
             layerid = groups[ group ]
 
             # [OPTIONAL] return a dict of meta information about the layer of interest
-            f.get_meta( layerid=layerid )
+            #f.get_meta( layerid=layerid )
 
-            f.get_data( layerid, QUERY )
+            #f.get_data( layerid, QUERY )
 
             # use the url generated by requests to issue a system command using subprocess
             output_filename = os.path.join( output_directory, '_'.join([ service.lower(), '2016', group ]) + ext )
@@ -80,7 +171,7 @@ def run(output_directory):
                 os.unlink( output_filename )
 
             with open( tmp_file, 'w' ) as out_json:
-                json.dump( source.get( groups[ group ], whereclause ), out_json )
+                json.dump( source.get( layerid, whereclause, layerlist ), out_json )
 
             # convert to the proper system? -- HACKY!!!
             os.system( 'ogr2ogr -f GeoJSON -t_srs EPSG:3338 ' + output_filename + ' ' + tmp_file )
