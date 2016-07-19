@@ -11,9 +11,9 @@ def process( pts, perims_all, perims_active, output_directory, join_field_perims
     from os.path import join
 
     # read in the data
-    fires = gpd.read_file( join(output_directory, pts) )
-    perims = gpd.read_file( join(output_directory, perims_all) )
-    perims_active = gpd.read_file( join(output_directory, perims_active) )
+    fires = gpd.read_file( join(output_directory, pts), encoding="utf-8" )
+    perims = gpd.read_file( join(output_directory, perims_all), encoding="utf-8" )
+    perims_active = gpd.read_file( join(output_directory, perims_active), encoding="utf-8" )
 
     # merge and add ACTIVENOW column --> HARDWIRED AND DANGERTOWN
     # joined = perims.join( fires_clean, how='left', on=join_field, lsuffix='_pol', rsuffix='_pts' )
