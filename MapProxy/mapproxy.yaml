@@ -42,7 +42,7 @@ sources:
       layers: osm
   osm_tms:
     type: tile
-    url: http://b.tile.openstreetmap.fr/hot/%(z)s/%(x)s/%(y)s.png
+    url: http://a.tile.thunderforest.com/outdoors/%(z)s/%(x)s/%(y)s.png
     grid: GLOBAL_WEBMERCATOR
 
 grids:
