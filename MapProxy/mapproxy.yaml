@@ -20,11 +20,17 @@ layers:
   - name: AFS_IBAND_VIIRS_24
     title: AFS IBAND VIIRS 24 Hour
     sources: [viirs_wms]
+  - name: alaska_osm
+    title: OSM WMS for alaska
+    sources: [alaska_osm_cache]
 
 caches:
   osm_cache:
     grids: [webmercator]
     sources: [osm_tms]
+  alaska_osm_cache:
+    grids: [epsg3338]
+    sources: [alaska_osm_mapnik]
 
 sources:
   viirs_wms:
@@ -44,10 +50,17 @@ sources:
     type: tile
     url: http://b.tile.openstreetmap.fr/hot/%(z)s/%(x)s/%(y)s.png
     grid: GLOBAL_WEBMERCATOR
+  alaska_osm_mapnik:
+    type: mapnik
+    mapfile: /usr/local/share/maps/style/alaska-mapnik.xml
 
 grids:
     webmercator:
         base: GLOBAL_WEBMERCATOR
+    epsg3338:
+      srs: EPSG:3338
+      bbox: [-129.9900, 51.3500, 172.4000, 71.3500]
+      bbox_srs: EPSG:4326
 
 globals:
   http:
