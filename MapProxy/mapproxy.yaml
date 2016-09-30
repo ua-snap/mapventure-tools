@@ -59,8 +59,7 @@ grids:
         base: GLOBAL_WEBMERCATOR
     epsg3338:
       srs: EPSG:3338
-      bbox: [-129.9900, 51.3500, 172.4000, 71.3500]
-      bbox_srs: EPSG:4326
+      bbox: [-2255938.4795, 449981.1884, 1646517.6368, 2676986.5642]
 
 globals:
   http:
