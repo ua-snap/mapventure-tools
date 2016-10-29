@@ -22,7 +22,7 @@ latestGeoTiff = geoTiffs[0]
 
 # Grab the latest GeoTIFF's creation date, throwing out the time zone because
 # strptime() is not able to parse the time zone in this format.
-match = re.search('^.*(?=-0[8-9]:00$)', latestGeoTiff['created_at'])
+match = re.search('^.*(?=-0[8-9]:00$)', latestGeoTiff['event_at'])
 dateObject = datetime.strptime(match.group(0), '%Y-%m-%dT%H:%M:%S')
 
 # Format the date as needed for GeoNode's importlayers management command.
