@@ -22,6 +22,9 @@ maxLayers = 3
 # Target time interval between GeoNode layers.
 layerInterval = timedelta(minutes=30)
 
+# How recent does the first GeoTIFF need to be?
+offsetFromNow = timedelta(minutes=10)
+
 # Acceptable time buffer before and after target time.
 acceptableRange = timedelta(minutes=3)
 
@@ -92,6 +95,10 @@ def importLayer(processedGeoTiff, formattedDate, sequenceNumber):
 
 # Date of the first (most recent) layer in the GeoJSON feed.
 firstDate = dateObject(geoTiffs[0]['event_at'])
+
+if(firstDate < datetime.now() - offsetFromNow):
+    logging.error("Date of first GeoTIFF is not recent enough.")
+    sys.exit()
 
 # Last possible date we are interested in.
 lastDate = firstDate - layerInterval * maxLayers
