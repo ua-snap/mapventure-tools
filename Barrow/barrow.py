@@ -4,26 +4,42 @@ import os
 import subprocess
 import json
 import re
-from datetime import datetime
+import sys
+import logging
+from datetime import datetime, timedelta
+
+logging.basicConfig(format = '%(levelname)s: %(message)s', level = logging.DEBUG)
 
 geonodePath = os.environ['GEONODE_INSTALL_PATH']
 geonodeVenv = os.environ['GEONODE_VIRTUALENV_PATH']
 workingDir = os.environ['DATA_WORKING_DIRECTORY']
+
 jsonFeed = 'http://feeder.gina.alaska.edu/radar-uaf-barrow-seaice-geotif.json'
+
+# Number of layers to import into GeoNode.
+maxLayers = 3
+
+# Target time interval between GeoNode layers.
+layerInterval = timedelta(minutes=30)
+
+# Acceptable time buffer before and after target time.
+accetableRange = timedelta(minutes=3)
 
 # Download and parse GINA's Barrow sea ice GeoTIFF feed.
 # The first element in the feed is the most recent GeoTIFF.
 response = urllib2.urlopen(jsonFeed)
 geoTiffs = json.loads(response.read())
 
-# Format the date as needed for GeoNode's importlayers management command.
-def formatDate(geoTiffDate):
-    # Grab the latest GeoTIFF's creation date, throwing out the time zone because
-    # strptime() is not able to parse the time zone in this format.
-    match = re.search('^.*(?=-0[8-9]:00$)', geoTiffDate)
-    dateObject = datetime.strptime(match.group(0), '%Y-%m-%dT%H:%M:%S')
+# Create a datetime object from a date string from the GeoTIFF feed.
+def dateObject(rawDate):
+    # Grab the latest GeoTIFF's creation date, throwing out the time zone
+    # because strptime() is not able to parse the time zone in this format.
+    match = re.search('^.*(?=-0[8-9]:00$)', rawDate)
+    return datetime.strptime(match.group(0), '%Y-%m-%dT%H:%M:%S')
 
-    return dateObject.strftime('%Y-%m-%d %H:%M:%S')
+# Format the date as needed for GeoNode's importlayers management command.
+def formatDate(dateObj):
+    return dateObj.strftime('%Y-%m-%d %H:%M:%S')
 
 # Download and save the GeoTIFF file.
 def download(geoTiffUrl):
@@ -38,6 +54,7 @@ def download(geoTiffUrl):
 def process(rawGeoTiff):
     processedGeoTiff = workingDir + '/barrow_sea_ice_radar.tif'
 
+    devnull = open(os.devnull, 'w')
     subprocess.call([
       'gdalwarp',
       '-s_srs',
@@ -51,7 +68,7 @@ def process(rawGeoTiff):
       '-dstalpha',
       rawGeoTiff,
       processedGeoTiff
-    ])
+    ], stdout=devnull, stderr=devnull)
 
     return processedGeoTiff
 
@@ -60,6 +77,7 @@ def process(rawGeoTiff):
 def importLayer(processedGeoTiff, formattedDate, sequenceNumber):
     geonodeVenvPython = geonodeVenv + '/bin/python'
 
+    devnull = open(os.devnull, 'w')
     subprocess.call([
       geonodeVenvPython,
       geonodePath + '/geonode/manage.py',
@@ -70,16 +88,54 @@ def importLayer(processedGeoTiff, formattedDate, sequenceNumber):
       'Barrow sea ice radar ' + str(sequenceNumber),
       '-o',
       processedGeoTiff
-    ])
+    ], stdout=devnull, stderr=devnull)
 
-for i in range(0, 3):
-    geoTiff = geoTiffs[i]
+# Date of the first (most recent) layer in the GeoJSON feed.
+firstDate = dateObject(geoTiffs[0]['event_at'])
 
-    formattedDate = formatDate(geoTiff['event_at'])
-    rawGeoTiff = download(geoTiff['source'])
-    processedGeoTiff = process(rawGeoTiff)
-    importLayer(processedGeoTiff, formattedDate, i + 1)
+# Last possible date we are interested in.
+lastDate = firstDate - layerInterval * maxLayers
 
-    # Clean up temporary files so we don't get warnings from GDAL in the future.
-    os.remove(rawGeoTiff)
-    os.remove(processedGeoTiff)
+# Use these to strictly enforce the position of our layers in GeoNode.
+targetPosition = 0
+success = {}
+
+for sourcePosition in range(0, len(geoTiffs)):
+    if(targetPosition == maxLayers):
+        sys.exit()
+
+    geoTiff = geoTiffs[sourcePosition]
+    currentDate = dateObject(geoTiff['event_at'])
+
+    # Compute the expected date and an acceptable time buffer on either side.
+    expectedDate = firstDate - layerInterval * targetPosition
+    lowEnd = expectedDate - accetableRange
+    highEnd = expectedDate + accetableRange
+
+    if(currentDate > lowEnd and currentDate < highEnd):
+        # Process the GeoTIFF's date and raster data, then import into GeoNode.
+        formattedDate = formatDate(currentDate)
+        rawGeoTiff = download(geoTiff['source'])
+        processedGeoTiff = process(rawGeoTiff)
+        importLayer(processedGeoTiff, formattedDate, targetPosition + 1)
+
+        # Clean up temporary files to avoid future GDAL warnings.
+        os.remove(rawGeoTiff)
+        os.remove(processedGeoTiff)
+
+        logging.info("Successfully imported GeoNode layer {0} with date {1}.".format(targetPosition + 1, formattedDate))
+
+        # Mark this GeoNode target layer as a success and move on.
+        success[targetPosition] = True
+        targetPosition += 1
+    elif(currentDate < lowEnd and targetPosition not in success):
+        # There are no more chances to find a suitable layer for this GeoNode
+        # target layer. Mark it as a failure and move on.
+        # TODO: Disable or delete failed layers from GeoNode to avoid confusion.
+
+        logging.info("Failed to import GeoNode layer {0}.".format(targetPosition + 1))
+
+        success[targetPosition] = False
+        targetPosition += 1
+    elif(currentDate < lastDate):
+        sys.exit()
