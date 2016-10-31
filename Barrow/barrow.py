@@ -140,7 +140,7 @@ for sourcePosition in range(0, len(geoTiffs)):
         # target layer. Mark it as a failure and move on.
         # TODO: Disable or delete failed layers from GeoNode to avoid confusion.
 
-        logging.info("Failed to import GeoNode layer {0}.".format(targetPosition + 1))
+        logging.error("Failed to import GeoNode layer {0}.".format(targetPosition + 1))
 
         success[targetPosition] = False
         targetPosition += 1
