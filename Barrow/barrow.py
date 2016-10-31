@@ -23,7 +23,7 @@ maxLayers = 3
 layerInterval = timedelta(minutes=30)
 
 # Acceptable time buffer before and after target time.
-accetableRange = timedelta(minutes=3)
+acceptableRange = timedelta(minutes=3)
 
 # Download and parse GINA's Barrow sea ice GeoTIFF feed.
 # The first element in the feed is the most recent GeoTIFF.
@@ -109,8 +109,8 @@ for sourcePosition in range(0, len(geoTiffs)):
 
     # Compute the expected date and an acceptable time buffer on either side.
     expectedDate = firstDate - layerInterval * targetPosition
-    lowEnd = expectedDate - accetableRange
-    highEnd = expectedDate + accetableRange
+    lowEnd = expectedDate - acceptableRange
+    highEnd = expectedDate + acceptableRange
 
     if(currentDate > lowEnd and currentDate < highEnd):
         # Process the GeoTIFF's date and raster data, then import into GeoNode.
