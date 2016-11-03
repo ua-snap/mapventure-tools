@@ -6,11 +6,27 @@ export MV_LEAFLET_IMAGE_PATH="bower_components/leaflet/dist/images/"
 export MAPVENTURE_DIST="/var/www/mapventure-dist"
 
 BRANCH_NAME=$1
+BUILD_DIR="/tmp"
 
-git clone -b $BRANCH_NAME https://github.com/ua-snap/mapventure.git && cd mapventure
+if [ -z $BRANCH_NAME ]
+        then
+                echo "Branch name not specified, exiting."
+                exit 1
+fi
 
-npm install && grunt build --dist
+cd $BUILD_DIR
 
-sudo rm -rf /tmp/mapventure-dist && sudo mv $MAPVENTURE_DIST /tmp/mapventure-dist && sudo cp -r dist $MAPVENTURE_DIST && sudo chown -R www-data:www-data $MAPVENTURE_DIST
+if [ ! -d mapventure ]
+        then
+                git clone https://github.com/ua-snap/mapventure.git
+fi
 
-sudo service apache2 restart 
+cd mapventure
+git pull
+git checkout $BRANCH_NAME
+
+npm install && grunt build --force --dist
+
+sudo rm -rf /tmp/mapventure-dist && sudo mv $MAPVENTURE_DIST /tmp/mapventure-dist && sudo cp -r dist $MAPVENTURE_DIST && sudo chown -R www-data:www-data $MAPVENTURE_DIST && sudo ln -s /var/www/downloads /var/www/mapventure-dist/downloads
+
+sudo service apache2 restart
