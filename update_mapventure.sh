@@ -33,6 +33,8 @@ git checkout $BRANCH_NAME
 
 npm install && grunt build --force && grunt build --dist
 
-sudo rm -rf /tmp/mapventure-dist && sudo mv $MAPVENTURE_DIST /tmp/mapventure-dist && sudo cp -r dist $MAPVENTURE_DIST && sudo chown -R www-data:www-data $MAPVENTURE_DIST && sudo ln -s /var/www/downloads /var/www/mapventure-dist/downloads && sudo rm -rf /tmp/mapventure
+sudo rm -rf $BUILD_DIR/mapventure-dist && sudo mv $MAPVENTURE_DIST $BUILD_DIR/mapventure-dist && sudo cp -r dist $MAPVENTURE_DIST && sudo chown -R www-data:www-data $MAPVENTURE_DIST && sudo ln -s /var/www/downloads /var/www/mapventure-dist/downloads
+
+cd $BUILD_DIR && sudo rm -rf /tmp/mapventure
 
 sudo service apache2 restart
