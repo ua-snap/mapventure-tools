@@ -8,29 +8,35 @@ services:
       use_grid_names: true
   wmts:
   wms:
-    srs: ['EPSG:3338']
+    srs: ['EPSG:3338', 'EPSG:3572']
     md:
       title: MapProxy WMS Proxy
       abstract: This is a minimal MapProxy example.
 
 layers:
-  - name: osm
-    title: Omniscale OSM WMS - osm.omniscale.net
-    sources: [osm_cache]
   - name: AFS_IBAND_VIIRS_24
     title: AFS IBAND VIIRS 24 Hour
     sources: [viirs_wms]
   - name: alaska_osm
-    title: OSM WMS for alaska
+    title: OSM Alaska EPSG:3338
     sources: [alaska_osm_cache]
+  - name: arctic_osm_3572
+    title: OSM Arctic EPSG:3572
+    sources: [arctic_osm_cache]
+  - name: arctic_places_osm_3572
+    title: OSM Arctic Place Names EPSG:3572
+    sources: [places_cache]
 
 caches:
-  osm_cache:
-    grids: [webmercator]
-    sources: [osm_tms]
   alaska_osm_cache:
     grids: [epsg3338]
     sources: [alaska_osm_mapnik]
+  arctic_osm_cache:
+    grids: [epsg3572]
+    sources: [arctic_osm_mapnik]
+  places_cache:
+    grids: [epsg3572]
+    sources: [places_mapnik]
 
 sources:
   viirs_wms:
@@ -40,19 +46,25 @@ sources:
       url: http://afsmaps.blm.gov/wmsconnector/com.esri.wms.Esrimap/AFSFires?
       layers: wmsCurrIbandVIIRS24
       transparent: true
-  osm_wms:
-    type: wms
-    req:
-      # use of this source is only permitted for testing
-      url: http://osm.omniscale.net/proxy/service?
-      layers: osm
-  osm_tms:
-    type: tile
-    url: http://b.tile.openstreetmap.fr/hot/%(z)s/%(x)s/%(y)s.png
-    grid: GLOBAL_WEBMERCATOR
   alaska_osm_mapnik:
     type: mapnik
     mapfile: /usr/local/share/maps/style/alaska-mapnik.xml
+    coverage:
+      bbox: [-180, 40, 180, 90]
+      srs: 'EPSG:4326'
+  arctic_osm_mapnik:
+    coverage:
+      bbox: [-180, 40, 180, 90]
+      srs: 'EPSG:4326'
+    type: mapnik
+    mapfile: /usr/local/share/maps/style/polar-3572.xml
+  places_mapnik:
+    transparent: true
+    coverage:
+      bbox: [-180, 40, 180, 90]
+      srs: 'EPSG:4326'
+    type: mapnik
+    mapfile: /usr/local/share/maps/style/places-3572.xml
 
 grids:
     webmercator:
@@ -60,6 +72,11 @@ grids:
     epsg3338:
       srs: EPSG:3338
       bbox: [-2255938.4795, 449981.1884, 1646517.6368, 2676986.5642]
+    epsg3572:
+      srs: EPSG:3572
+      res: [8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1, .5, .25, .125]
+      bbox: [180, 40, -180, 90]
+      bbox_srs: EPSG:4326
 
 globals:
   http:
