@@ -8,4 +8,4 @@
 
 from mapproxy.wsgiapp import make_wsgi_app
 # Change this to match the server running MapProxy
-application = make_wsgi_app('/home/osm/mapventure-tools/MapProxy/mapproxy.yaml')
+application = make_wsgi_app('/var/home/osm/mapventure-tools/MapProxy/mapproxy.yaml')
