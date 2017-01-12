@@ -1,0 +1,24 @@
+seeds:
+  myseed1:
+    caches: [alaska_osm_cache]
+    grids: [epsg3338]
+    # coverages: []
+    levels:
+      to: 7
+  arctic:
+    caches: [arctic_osm_cache]
+    grids: [epsg3572]
+    coverages: [arctic]
+    levels:
+      to: 9
+  places:
+    caches: [places_cache]
+    grids: [epsg3572]
+    coverages: [arctic]
+    levels:
+      to: 9
+
+coverages:
+  arctic:
+    bbox: [-180, 45, 180, 90]
+    srs: 'EPSG:4326'
