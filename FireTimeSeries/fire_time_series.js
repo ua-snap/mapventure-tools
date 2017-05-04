@@ -4,8 +4,7 @@ var http = require('http');
 var moment = require('moment');
 var fs = require('fs');
 
-var geoserver_url = 'http://localhost:8080/geoserver';
-var url = geoserver_url + '/wfs?service=wfs&version=2.0.0&request=GetFeature&typeName=geonode:active_fires&srsName=EPSG:3338&outputFormat=application/json&bbox=-2255938.4795,449981.1884,1646517.6368,2676986.5642';
+var url = 'http://mv-aicc-fire-shim-mv-aicc-fire-shim.openshift.snap.uaf.edu/';
 var filename = 'output/' + moment().format('YYYY') + '.json';
 var series = {};
 
@@ -33,7 +32,7 @@ http.get(url, function (res) {
     var parsed = JSON.parse(body);
 
     parsed.features.forEach(function (feature) {
-      acres += feature.properties.ACRES;
+      acres += feature.properties.ESTIMATEDTOTALACRES;
     });
 
     series.dates.push(moment().format('MMMM D'));
