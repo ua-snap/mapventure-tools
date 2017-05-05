@@ -5,7 +5,16 @@ var moment = require('moment');
 var fs = require('fs');
 
 var url = 'http://mv-aicc-fire-shim-mv-aicc-fire-shim.openshift.snap.uaf.edu/';
-var filename = 'output/' + moment().format('YYYY') + '.json';
+var outputDir;
+
+if (process.env.OUTPUT_DIR === undefined) {
+  console.error('You need to set the OUTPUT_DIR environment variable.');
+  process.exit();
+} else {
+  outputDir = process.env.OUTPUT_DIR;
+}
+
+var filename = outputDir + '/' + moment().format('YYYY') + '.json';
 var series = {};
 
 if (fs.existsSync(filename)) {
