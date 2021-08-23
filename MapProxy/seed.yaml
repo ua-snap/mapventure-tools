@@ -5,18 +5,23 @@ seeds:
     # coverages: []
     levels:
       to: 7
+  retina:
+    caches: [alaska_osm_retina_cache]
+    grids: [epsg3338_retina]
+    levels:
+      to: 7
   arctic:
     caches: [arctic_osm_cache]
     grids: [epsg3572]
     coverages: [arctic]
     levels:
-      to: 9
+      to: 7
   places:
     caches: [places_cache]
     grids: [epsg3572]
     coverages: [arctic]
     levels:
-      to: 9
+      to: 7
 
 coverages:
   arctic:
