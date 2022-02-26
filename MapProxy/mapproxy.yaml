@@ -8,35 +8,50 @@ services:
       use_grid_names: true
   wmts:
   wms:
-    srs: ['EPSG:3338', 'EPSG:3572']
+    srs: ['EPSG:3338', 'EPSG:3572', 'EPSG:3579']
     md:
       title: MapProxy WMS Proxy
-      abstract: This is a minimal MapProxy example.
+      abstract: SNAP MapProxy in front of OSM/Mapnik rendering stack
 
 layers:
   - name: AFS_IBAND_VIIRS_24
     title: AFS IBAND VIIRS 24 Hour
     sources: [viirs_wms]
+  - name: Weather_Map
+    title: Weather Map
+    sources: [weather]
   - name: alaska_osm
     title: OSM Alaska EPSG:3338
-    sources: [alaska_osm_cache]
+    sources: [3338_cache]
+  - name: alaska_osm_retina
+    title: Retina Resolution OSM Alaska EPSG:3338
+    sources: [alaska_osm_retina_cache]
+  - name: alaska_places_osm_3338
+    title: OSM Alaska Place Names EPSG:3338
+    sources: [3338_places_cache]
   - name: arctic_osm_3572
     title: OSM Arctic EPSG:3572
-    sources: [arctic_osm_cache]
+    sources: [3572_cache]
   - name: arctic_places_osm_3572
     title: OSM Arctic Place Names EPSG:3572
-    sources: [places_cache]
+    sources: [3572_places_cache]
 
 caches:
-  alaska_osm_cache:
+  3338_cache:
     grids: [epsg3338]
     sources: [alaska_osm_mapnik]
-  arctic_osm_cache:
+  alaska_osm_retina_cache:
+    grids: [epsg3338_retina]
+    sources: [alaska_osm_retina_mapnik]
+  3338_places_cache:
+    grids: [epsg3338]
+    sources: [places_3338_mapnik]
+  3572_cache:
     grids: [epsg3572]
-    sources: [arctic_osm_mapnik]
-  places_cache:
+    sources: [3572_mapnik]
+  3572_places_cache:
     grids: [epsg3572]
-    sources: [places_mapnik]
+    sources: [3572_places_mapnik]
 
 sources:
   viirs_wms:
@@ -46,19 +61,40 @@ sources:
       url: http://afsmaps.blm.gov/wmsconnector/com.esri.wms.Esrimap/AFSFires?
       layers: wmsCurrIbandVIIRS24
       transparent: true
+  weather:
+    type: wms
+    supported_srs: ['EPSG:4326']
+    req:
+      url: http://nowcoast.noaa.gov/arcgis/services/nowcoast/radar_meteo_imagery_nexrad_time/MapServer/WmsServer?
+      layers: 1
+      transparent: true
   alaska_osm_mapnik:
     type: mapnik
-    mapfile: /usr/local/share/maps/style/alaska-mapnik.xml
+    mapfile: /usr/local/share/maps/style/alaska-3338.xml
     coverage:
       bbox: [-180, 40, 180, 90]
       srs: 'EPSG:4326'
-  arctic_osm_mapnik:
+  alaska_osm_retina_mapnik:
+    type: mapnik
+    mapfile: /usr/local/share/maps/style/alaska-retina-3338.xml
+    scale_factor: 2
+    coverage:
+      bbox: [-180, 40, 180, 90]
+      srs: 'EPSG:4326'
+  places_3338_mapnik:
+    transparent: true
+    coverage:
+      bbox: [-180, 40, 180, 90]
+      srs: 'EPSG:4326'
+    type: mapnik
+    mapfile: /usr/local/share/maps/style/places-3338.xml
+  3572_mapnik:
     coverage:
       bbox: [-180, 40, 180, 90]
       srs: 'EPSG:4326'
     type: mapnik
     mapfile: /usr/local/share/maps/style/polar-3572.xml
-  places_mapnik:
+  3572_places_mapnik:
     transparent: true
     coverage:
       bbox: [-180, 40, 180, 90]
@@ -72,12 +108,17 @@ grids:
     epsg3338:
       srs: EPSG:3338
       bbox: [-2255938.4795, 449981.1884, 1646517.6368, 2676986.5642]
+    epsg3338_retina:
+      origin: nw
+      srs: EPSG:3338
+      bbox: [180, 40, -180, 90]
+      bbox_srs: EPSG:4326
+      tile_size: [512, 512]
     epsg3572:
       srs: EPSG:3572
       res: [8192, 4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1, .5, .25, .125]
       bbox: [180, 40, -180, 90]
       bbox_srs: EPSG:4326
-
 globals:
   http:
     ssl_no_cert_checks: True
